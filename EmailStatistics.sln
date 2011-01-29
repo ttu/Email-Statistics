@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailStatistics", "EmailStatistics\EmailStatistics.csproj", "{7ABDA65C-CFF8-4454-BB1C-E4BE3643A6D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UT_EmailStatistics", "UT_EmailStatistics\UT_EmailStatistics.csproj", "{287BC5F2-B34B-4758-B25A-C6874209484C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailStatisticsWPF", "EmailStatisticsWPF\EmailStatisticsWPF.csproj", "{3A4B4CF5-AE75-44A5-AE8F-021CAF60BD8B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7ABDA65C-CFF8-4454-BB1C-E4BE3643A6D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7ABDA65C-CFF8-4454-BB1C-E4BE3643A6D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7ABDA65C-CFF8-4454-BB1C-E4BE3643A6D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7ABDA65C-CFF8-4454-BB1C-E4BE3643A6D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{287BC5F2-B34B-4758-B25A-C6874209484C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{287BC5F2-B34B-4758-B25A-C6874209484C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{287BC5F2-B34B-4758-B25A-C6874209484C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{287BC5F2-B34B-4758-B25A-C6874209484C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A4B4CF5-AE75-44A5-AE8F-021CAF60BD8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A4B4CF5-AE75-44A5-AE8F-021CAF60BD8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A4B4CF5-AE75-44A5-AE8F-021CAF60BD8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A4B4CF5-AE75-44A5-AE8F-021CAF60BD8B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
