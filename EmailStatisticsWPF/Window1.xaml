@@ -7,13 +7,13 @@
         <TextBox Height="23" Margin="27,20,0,0" Name="usernameBox" VerticalAlignment="Top" TextChanged="usernameText_TextChanged" HorizontalAlignment="Left" Width="144" ClipToBounds="False" TabIndex="1"></TextBox>
         <Label Height="28" Margin="27,-3,0,0" Name="label1" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="206">User name</Label>
         <Label Height="28" Margin="191,-3,0,0" Name="label2" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="202">Password</Label>
-        <Label Height="28" Margin="402,126,0,0" Name="messageLbl" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="203"></Label>
+        <Label Height="28" Margin="131,135,0,0" Name="messageLbl" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="248"></Label>
         <Label HorizontalAlignment="Left" Margin="27,49,0,0" Name="label3" Width="120" Height="31" VerticalAlignment="Top" ClipToBounds="False">Mail counters:</Label>
         <Label HorizontalAlignment="Left" Margin="27,73,0,0" Name="label4" Width="120" Height="31" VerticalAlignment="Top" ClipToBounds="False">Inbox</Label>
         <Label HorizontalAlignment="Left" Margin="27,95,0,0" Name="label5" Width="120" Height="27" VerticalAlignment="Top" ClipToBounds="False">Sent</Label>
         <Label Margin="131,72,0,0" Name="label6" ClipToBounds="False" Height="27" VerticalAlignment="Top" HorizontalAlignment="Left" Width="83.706">By subject</Label>
-        <Label Margin="86,73,0,0" Name="countInbox" HorizontalAlignment="Left" Width="39" ClipToBounds="False" Height="27" VerticalAlignment="Top">-</Label>
-        <Label Margin="86,95,0,0" Name="countSent" Height="27" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" ClipToBounds="False">-</Label>
+        <Label Margin="74,73,0,623" Name="countInbox" HorizontalAlignment="Left" Width="42" ClipToBounds="False">-</Label>
+        <Label Margin="74,95,0,0" Name="countSent" Height="27" HorizontalAlignment="Left" VerticalAlignment="Top" Width="42" ClipToBounds="False">-</Label>
         <Label Margin="219,72,0,0" Name="countSubject" Height="27" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="82">-</Label>
         <Label Margin="130,94,0,0" Name="label10" Height="25" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="67.706">Process</Label>
         <Label Margin="219,94,0,0" Name="countProcessed" Height="25" VerticalAlignment="Top" ClipToBounds="False" HorizontalAlignment="Left" Width="82">-</Label>
@@ -90,5 +90,6 @@
         </TabControl>
         <Button ClipToBounds="False" HorizontalAlignment="Left" IsEnabled="False" Margin="402,57,0,0" Name="connectBtn" TabIndex="6" Width="93" Height="23" VerticalAlignment="Top" Click="connectBtn_Click">Connect</Button>
         <Button ClipToBounds="False" Height="23" HorizontalAlignment="Left" IsEnabled="False" Margin="512,57,0,0" Name="disconnectBtn" TabIndex="6" VerticalAlignment="Top" Width="93" Click="disconnectBtn_Click">Disconnect</Button>
+        <Button ClipToBounds="False" Height="23" HorizontalAlignment="Left" IsEnabled="False" Margin="402,140,0,0" Name="startNoUpdateBtn" TabIndex="7" VerticalAlignment="Top" Width="93" Click="startNoUpdateBtn_Click" Content="Get (No Charts)"></Button>
     </Grid>
 </Window>

@@ -107,6 +107,11 @@ namespace EmailStatistics
             throw new NotImplementedException();
         }
 
+        public override IEnumerable<List<Mail>> GetMails(string subject, bool getInbox, bool getSent, int batchSize)
+        {
+            throw new NotImplementedException();
+        }
+
         public override bool HasConnection()
         {
             throw new NotImplementedException();

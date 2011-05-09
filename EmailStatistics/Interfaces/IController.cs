@@ -14,5 +14,6 @@ namespace EmailStatistics
         void DisableConnection();
         void Stop();
         void GetData(string subject, bool getInbox, bool getSent);
+        void GetDataNoUpdates(string subject, bool getInbox, bool getSent);
     }
 }

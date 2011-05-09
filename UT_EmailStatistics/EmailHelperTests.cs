@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using EmailStatistics;
+using System.Collections;
 
 namespace UT_EmailStatistics
 {
@@ -13,7 +14,7 @@ namespace UT_EmailStatistics
     [TestClass]
     public class EmailHelperTests
     {
-        InterIMAPGmailHelper _helper;
+        EmailHelper _helper;
 
         string _username = "";
         string _password = "";
@@ -60,8 +61,9 @@ namespace UT_EmailStatistics
         [TestInitialize()]
         public void MyTestInitialize()
         {
-            _helper = new InterIMAPGmailHelper();
-            _helper.SetConfig("imap.gmail.com", 995, true, _username, _password);
+            //_helper = new InterIMAPGmailHelper();
+            _helper = new LumiIMAPGmailHelper();
+            _helper.SetConfig("imap.gmail.com", 993, true, _username, _password);
             _helper.EnableConnection();
         }
 
@@ -106,6 +108,24 @@ namespace UT_EmailStatistics
             List<Mail> messages = _helper.GetMessagesBySubject(_subject);
 
             Assert.IsNotNull(messages);
+        }
+
+        [TestMethod]
+        public void Helper_GetMailsBySubjectIEnumerable()
+        {
+            foreach (Mail message in _helper.GetMails(_subject, true, true))
+            {
+                Assert.IsNotNull(message);
+            }
+        }
+
+        [TestMethod]
+        public void Helper_GetMailsBySubjectIEnumerableList()
+        {
+            foreach(List<Mail> messages in _helper.GetMails(_subject,true,true,3))
+            {
+                Assert.IsNotNull(messages);
+            }         
         }
 
         [TestMethod]
@@ -214,6 +234,9 @@ namespace UT_EmailStatistics
         [TestMethod]
         public void Helper_GetMessagesBySubjectStatistic()
         {
+            if (!(_helper is InterIMAPGmailHelper))
+                return;
+
             List<StatType> stats = new List<StatType>();
             stats.Add(StatType.Month);
             stats.Add(StatType.Day);
@@ -222,7 +245,7 @@ namespace UT_EmailStatistics
 
             DateTime start = DateTime.Now;
 
-            Dictionary<StatType, int[]> result = _helper.GetDateStatistics(stats, _subject);
+            Dictionary<StatType, int[]> result = ((InterIMAPGmailHelper)_helper).GetDateStatistics(stats, _subject);
 
             DateTime stop = DateTime.Now;
 
@@ -234,9 +257,12 @@ namespace UT_EmailStatistics
         [TestMethod]
         public void Helper_GetMessagesBySubjectUserStatistic()
         {
+            if (!(_helper is InterIMAPGmailHelper))
+                return;
+
             DateTime start = DateTime.Now;
 
-            Dictionary<string, int> result = _helper.GetUserStatistics(_subject);
+            Dictionary<string, int> result = ((InterIMAPGmailHelper)_helper).GetUserStatistics(_subject);
 
             DateTime stop = DateTime.Now;
 
@@ -249,6 +275,7 @@ namespace UT_EmailStatistics
         public void Helper_GetMails()
         {
             int counter = 0;
+            
             foreach (Mail m in _helper.GetMails(_subject, true, true))
             {
                 counter++;

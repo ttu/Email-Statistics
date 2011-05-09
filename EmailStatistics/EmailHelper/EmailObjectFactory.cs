@@ -11,13 +11,14 @@ namespace EmailStatistics
 
         public IEmaillHelper GetInterIMAPHelper()
         {
-            return new InterIMAPGmailHelper();
+            return new LumiIMAPGmailHelper();
+            //return new InterIMAPGmailHelper();
         }
 
         public IEmaillHelper GetOpenPOPGmailHelper()
         {
-            return new InterIMAPGmailHelper();
-
+            return new LumiIMAPGmailHelper();
+            //return new InterIMAPGmailHelper();
         }
 
         public IEmailWorker GetWorker(ConnectionType connectionType)

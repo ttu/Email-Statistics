@@ -30,7 +30,7 @@ namespace EmailStatisticsWPF
 
         ConnectionType _conType = ConnectionType.IMAP;
         string _host = "imap.gmail.com";
-        int _port = 995;
+        int _port = 993;
         bool _useSSL = true;
 
         public Window1()
@@ -228,7 +228,18 @@ namespace EmailStatisticsWPF
           
             _controller.GetData(subjectBox.Text, inboxChkBox.IsChecked.Value, sentChkBox.IsChecked.Value);
         }
- 
+
+        private void startNoUpdateBtn_Click(object sender, RoutedEventArgs e)
+        {
+            messageLbl.Content = "Creating statistics (no updates)";
+
+            createChartDataSources(_model);
+
+            gettingDataState();
+
+            _controller.GetDataNoUpdates(subjectBox.Text, inboxChkBox.IsChecked.Value, sentChkBox.IsChecked.Value);
+        }
+
         private void connectBtn_Click(object sender, RoutedEventArgs e)
         {
             messageLbl.Content = "Connecting";
@@ -269,6 +280,7 @@ namespace EmailStatisticsWPF
             connectBtn.IsEnabled = false;
             disconnectBtn.IsEnabled = false;
             startBtn.IsEnabled = false;
+            startNoUpdateBtn.IsEnabled = false;
 
             checkConnectButtonStates();
         }
@@ -285,6 +297,7 @@ namespace EmailStatisticsWPF
             connectBtn.IsEnabled = false;
             disconnectBtn.IsEnabled = false;
             startBtn.IsEnabled = false;
+            startNoUpdateBtn.IsEnabled = false;
         }
 
         void connectedState()
@@ -299,6 +312,7 @@ namespace EmailStatisticsWPF
             connectBtn.IsEnabled = false;
             disconnectBtn.IsEnabled = true;
             startBtn.IsEnabled = true;
+            startNoUpdateBtn.IsEnabled = true;
         }
 
         void disconnectingState()
@@ -313,6 +327,7 @@ namespace EmailStatisticsWPF
             connectBtn.IsEnabled = false;
             disconnectBtn.IsEnabled = false;
             startBtn.IsEnabled = false;
+            startNoUpdateBtn.IsEnabled = false;
         }
 
         void gettingDataState()
@@ -327,9 +342,9 @@ namespace EmailStatisticsWPF
             connectBtn.IsEnabled = false;
             disconnectBtn.IsEnabled = false;
             startBtn.IsEnabled = false;
+            startNoUpdateBtn.IsEnabled = false;
         }
 
         #endregion
-
     }
 }

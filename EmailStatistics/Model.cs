@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EmailStatistics
 {
@@ -19,7 +20,8 @@ namespace EmailStatistics
             Reset();
         }
 
-        public Model(int updateInterval):this()
+        public Model(int updateInterval)
+            : this()
         {
             _updateInterval = updateInterval;
         }
@@ -49,7 +51,7 @@ namespace EmailStatistics
         }
 
         public int SelectedCount { get; set; }
-        
+
         public int Process
         {
             get { return Mails.Count * 100 / SelectedCount; }
@@ -69,7 +71,7 @@ namespace EmailStatistics
 
         public int TotalLenght
         {
-            get 
+            get
             {
                 int result = 0;
 
@@ -124,6 +126,32 @@ namespace EmailStatistics
             return true;
         }
 
+        public bool AddMails(List<Mail> mails)
+        {
+            foreach (Mail mail in mails)
+            {
+                User user = Users.Where(u => u.EmailAddress.Equals(mail.From)).FirstOrDefault();
+                if (user == null)
+                {
+                    user = new User(mail);
+                    Users.Add(user);
+                }
+                else
+                    user.AddMail(mail);
+
+                mail.Owner = user;
+                Mails.Add(mail);
+
+                updateStats(mail);
+            }
+
+            if (ModelUpdated != null)
+                ModelUpdated(this, null);
+
+
+            return true;
+        }
+
         public void DataReady()
         {
             // TODO: Need to do something in here?
@@ -134,7 +162,7 @@ namespace EmailStatistics
 
         private void updateStats(Mail mail)
         {
-            foreach(KeyValuePair<StatType, int[]> kvp in DateStats)
+            foreach (KeyValuePair<StatType, int[]> kvp in DateStats)
             {
                 insertToStatsCollection(kvp.Key, kvp.Value, mail.Date);
             }
@@ -208,7 +236,7 @@ namespace EmailStatistics
                     headers = new string[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dev" };
                     break;
                 case StatType.Day:
-                    headers = new string[] {  "Sun" , "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+                    headers = new string[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
                     break;
                 case StatType.Hour4:
                     headers = new string[] { "0-4", "4-8", "8-12", "12-16", "16-20", "20-24" };
@@ -223,30 +251,50 @@ namespace EmailStatistics
 
             return headers;
         }
+
+        public string GetUserStats
+        {
+            get
+            {
+                string retVal = "";
+
+                foreach (User user in Users)
+                {
+                    retVal += user.GetUserStats();
+                }
+
+                return retVal;
+            }
+        }
     }
 
     public class User
     {
         public List<Mail> Mails { get; set; }
         public string EmailAddress { get; set; }
-        
+
         private int _totalLength;
         private int _wordCount;
 
-        public int AvgLEngth
+        private int _linkCount;
+        private int _mailsWithLink;
+
+        public double AvgLength
         {
             get { return _totalLength / Mails.Count; }
         }
 
-        public int AvgWordCount
+        public double AvgWordCount
         {
             get { return _wordCount / Mails.Count; }
         }
 
-        public int TotalLength 
+        public int TotalLength
         {
-            get { return _totalLength; } 
+            get { return _totalLength; }
         }
+
+        private Regex _regex = new Regex("<a href=\".*\">");
 
         public User()
         {
@@ -270,6 +318,23 @@ namespace EmailStatistics
                 string[] words = mail.Body.Trim().Split(' ');
                 _wordCount += words.Length;
             }
+
+
+            MatchCollection mCol = _regex.Matches(mail.BodyHtml);
+            _linkCount += mCol.Count;
+            _mailsWithLink += mCol.Count > 0 ? 1 : 0;
+        }
+
+        public string GetUserStats()
+        {
+            string retVal = "User: {0}\r\nMails: {1}\r\n" +
+                            "Length: {2}\r\nAvg. length: {3}\r\n" +
+                            "Word count: {4}\r\nAvg. Word count: {5}\r\n" +
+                            "Total links: {6}\r\nMails with links: {7}\r\n" +
+                             "-------------------------------------------------\r\n";
+
+
+            return string.Format(retVal, EmailAddress, Mails.Count, _totalLength, AvgLength, _wordCount, AvgWordCount, _linkCount, _mailsWithLink);
         }
     }
 }

@@ -52,6 +52,7 @@ namespace EmailStatistics
             _emailWorker.DisconnectComplete += new TaskCompleteDelegate(_emailWorker_DisconnectComplete);
             _emailWorker.GetDataComplete += new TaskCompleteDelegate(_emailWorker_GetDataComplete);
             _emailWorker.NewMail += new NewMailEvent(_emailWorker_NewMail);
+            _emailWorker.NewMails += new NewMailsEvent(_emailWorker_NewMails);
 
             // TODO: Maybe worker should have some king of model, this is stupid
             _emailWorker.InboxCount += new NewModelCount(_emailWorker_InboxCount);
@@ -79,6 +80,12 @@ namespace EmailStatistics
         {
             //TODO: Check if better to have thread for this
             _model.AddMail(newMail);
+        }
+
+        void _emailWorker_NewMails(List<Mail> newMail)
+        {
+            //TODO: Check if better to have thread for this
+            _model.AddMails(newMail);
         }
 
         void _emailWorker_GetDataComplete(bool success, string message)
@@ -110,6 +117,14 @@ namespace EmailStatistics
             _emailWorker.GetSelectedMessageCount(subject, getInbox, getSent);
 
             _emailWorker.GetData(subject, getInbox, getSent);
+        }
+
+        public void GetDataNoUpdates(string subject, bool getInbox, bool getSent)
+        {
+            // Get selected messages count
+            _emailWorker.GetSelectedMessageCount(subject, getInbox, getSent);
+
+            _emailWorker.GetDataNoUpdates(subject, getInbox, getSent);
         }
 
         public void SetConfig(ConnectionType conType, string host, int port, bool useSSL, string username, string password)

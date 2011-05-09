@@ -151,7 +151,16 @@ namespace EmailStatistics
                     yield return convertToMail(m);
             }
         }
-		
+
+        public override IEnumerable<List<Mail>> GetMails(string subject, bool getInbox, bool getSent, int batchSize)
+        {
+            // batchSize not implemented
+            foreach (Mail m in GetMails(subject, getInbox, getSent))
+            { 
+                yield return new List<Mail>{m};
+            }
+        }
+
 		#endregion
 		
         #region Message count
@@ -162,7 +171,8 @@ namespace EmailStatistics
 			
             if (getInbox)
 			{
-	            IMAPFolder inbox = _client.GetSingleFolder(_inboxName);
+	            
+                IMAPFolder inbox = _client.GetSingleFolder(_inboxName);
 	            retVal += inbox.Messages.Count;
 			}
 			

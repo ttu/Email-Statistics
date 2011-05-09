@@ -147,6 +147,7 @@ namespace EmailStatistics
         public abstract void SetConfig(string host, int port, bool useSSL, string username, string password);
 
         public abstract IEnumerable<Mail> GetMails(string subject, bool getInbox, bool getSent);
+        public abstract IEnumerable<List<Mail>> GetMails(string subject, bool getInbox, bool getSent, int batchSize);
         public abstract int GetMessageCountBySubject(string subject, bool getInbox, bool getSent);
 
         // Not required by interface
@@ -262,6 +263,7 @@ namespace EmailStatistics
 
         public string Subject { get; set; }
         public string Body { get; set; }
+        public string BodyHtml { get; set; }
 
         public User Owner { get; set; }
     }

@@ -19,6 +19,7 @@ namespace EmailStatistics
         int Process { get; }
 
         bool AddMail(Mail mail);
+        bool AddMails(List<Mail> mails);
         string[] GetStatsHeaders(StatType statType);
         void DataReady();
         void Reset();
