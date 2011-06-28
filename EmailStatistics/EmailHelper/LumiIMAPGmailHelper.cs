@@ -23,14 +23,34 @@ namespace EmailStatistics
 
         private string _subject = "SUBJECT {0}";
 
-        private Regex _regex;
+        // TODO: Combine patterns to one and move to base class
+        // e.g. 2010/6/17 Name <some@address.com>
+        // 28. kesäkuuta 2010 11.33 Name <some@address.com>
+        private string _gmailEndPattern = @"(20)\d\d/[0-9]{1,2}/[0-9]{1,2}[ ]{1}.*[ ]{1}<[a-zA-Z0-9._%+-]*@[a-zA-Z0-9._%+-]*>" + 
+                                            @"|\d{1,2}\.[ ].*<[a-zA-Z0-9._%+-]*@[a-zA-Z0-9._%+-]*>" +
+                                             "|[\r\n](> )" +
+                                             "|-----Original Message-----";
+
+        // Mails sent from mobiles have different end patterns
+        private string _gmailHtmlEnd = "(<div class=\"gmail_quote\">)|(<a href=\"mailto:)";
+
+        /*
+         * Might end with:
+         * ____________________
+         * Date:
+         * > Date:
+         * WHWHWHW&gt; Date:
+         */
+        private string _hotmailEndPattern = "[\r\n]([_]{5}|[a-zA-Z]*:|> [a-zA-Z]*:)";
+
+        /*
+         * Some had <hr and some <HR
+         */
+        private string _hotmailHtmlEnd = "<hr|<HR|(&gt; )[a-zA-Z]*:";
 
         public LumiIMAPGmailHelper()
         {
             _client = new IMAP_Client();
-            string regexPattern = @"(20)\d\d/[0-9]{1,2}/[0-9]{1,2}[ ]{1}.*[ ]{1}<[a-zA-Z0-9._%+-]*@[a-zA-Z0-9._%+-]*>\r\n";
-            _regex = new Regex(regexPattern);
-
         }
 
         protected override bool logIn()
@@ -107,6 +127,9 @@ namespace EmailStatistics
         private List<string> getUids(string subject, int batchSize)
         {
             int[] mailUids = _client.Search(true, System.Text.Encoding.ASCII.WebName, string.Format(_subject, subject));
+
+            if (batchSize == 0)
+                batchSize = mailUids.Length;
 
             List<string> idStrings = new List<string>();
 
@@ -222,7 +245,9 @@ namespace EmailStatistics
                 {
                     storeStream.Position = 0;
                     Mail_Message mime = Mail_Message.ParseFromStream(storeStream);
-                    retVal.Add(convertToMail(mime));
+                    // TODO: Date check
+                    // if (mime.Date < DateTime.Parse("2011-06-20"))
+                        retVal.Add(convertToMail(mime));
                 });
             });
 
@@ -281,21 +306,31 @@ namespace EmailStatistics
             retVal.Subject = mime.Subject;
             retVal.From = mime.From[0].Address;
             retVal.Date = mime.Date;
-            retVal.Body = clearMailBody(mime.BodyText);
-            retVal.BodyHtml = clearMailBodyHtml(mime.BodyHtmlText);
+
+            // TODO: Combine patterns
+            if (retVal.From.EndsWith("hotmail.com"))
+            {
+                retVal.Body = clearMailBody(mime.BodyText, _hotmailEndPattern);
+                retVal.BodyHtml = clearMailBodyHtml(mime.BodyHtmlText, _hotmailHtmlEnd);                    
+            }
+            else
+            {
+                retVal.Body = clearMailBody(mime.BodyText, _gmailEndPattern);
+                retVal.BodyHtml = clearMailBodyHtml(mime.BodyHtmlText, _gmailHtmlEnd);    
+            }
 
             return retVal;
         }
 
-        // This only seems to work with mails sent from gmail account
-        private string clearMailBody(string fullBody)
+        private string clearMailBody(string fullBody, string endPattern)
         {
             if (string.IsNullOrEmpty(fullBody))
                 return string.Empty;
 
-            Match match = _regex.Match(fullBody);
+            Regex regex = new Regex(endPattern);
+            Match match = regex.Match(fullBody);
 
-            int endIndex = match.Index > 0 ? match.Index : fullBody.Length;
+            int endIndex = match.Success ? match.Index : fullBody.Length;
 
             string retVal = fullBody.Substring(0, endIndex);
             retVal = retVal.Replace("\r\n", " ");
@@ -303,16 +338,15 @@ namespace EmailStatistics
             return retVal.Trim();
         }
 
-        // This only seems to work with mails sent from gmail account
-        private string clearMailBodyHtml(string fullBody)
+        private string clearMailBodyHtml(string fullBody, string endPattern)
         {
             if (string.IsNullOrEmpty(fullBody))
                 return string.Empty;
 
-            int endIndex = fullBody.Length;
+            Regex regex = new Regex(endPattern);
+            Match match = regex.Match(fullBody);
 
-            if (fullBody.Contains("<div class=\"gmail_quote\">"))
-                endIndex = fullBody.IndexOf("<div class=\"gmail_quote\">");
+            int endIndex = match.Success ? match.Index : fullBody.Length;
 
             string retVal = fullBody.Substring(0, endIndex);
 

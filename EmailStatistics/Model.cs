@@ -11,6 +11,7 @@ namespace EmailStatistics
         private int _updateInterval = 10;
         private int _inboxCounter;
         private int _sentCounter;
+        private string _additionalWordCheck;
 
         public event EventHandler ModelUpdated;
         public event EventHandler CountersUpdated;
@@ -20,10 +21,11 @@ namespace EmailStatistics
             Reset();
         }
 
-        public Model(int updateInterval)
+        public Model(int updateInterval, string additionalWordCheck = "")
             : this()
         {
             _updateInterval = updateInterval;
+            _additionalWordCheck = additionalWordCheck;
         }
 
         public int InboxCount
@@ -99,19 +101,8 @@ namespace EmailStatistics
 
         public bool AddMail(Mail mail)
         {
-            User user = Users.Where(u => u.EmailAddress.Equals(mail.From)).FirstOrDefault();
-            if (user == null)
-            {
-                user = new User(mail);
-                Users.Add(user);
-            }
-            else
-                user.AddMail(mail);
 
-            mail.Owner = user;
-            Mails.Add(mail);
-
-            updateStats(mail);
+            addMail(mail);
 
             _updateCounter++;
 
@@ -130,19 +121,7 @@ namespace EmailStatistics
         {
             foreach (Mail mail in mails)
             {
-                User user = Users.Where(u => u.EmailAddress.Equals(mail.From)).FirstOrDefault();
-                if (user == null)
-                {
-                    user = new User(mail);
-                    Users.Add(user);
-                }
-                else
-                    user.AddMail(mail);
-
-                mail.Owner = user;
-                Mails.Add(mail);
-
-                updateStats(mail);
+                addMail(mail);
             }
 
             if (ModelUpdated != null)
@@ -158,6 +137,23 @@ namespace EmailStatistics
 
             if (ModelUpdated != null)
                 ModelUpdated(this, null);
+        }
+
+        private void addMail(Mail mail)
+        {
+            User user = Users.Where(u => u.EmailAddress.Equals(mail.From)).FirstOrDefault();
+            if (user == null)
+            {
+                user = new User(mail, _additionalWordCheck);
+                Users.Add(user);
+            }
+            else
+                user.AddMail(mail);
+
+            mail.Owner = user;
+            Mails.Add(mail);
+
+            updateStats(mail);
         }
 
         private void updateStats(Mail mail)
@@ -266,6 +262,43 @@ namespace EmailStatistics
                 return retVal;
             }
         }
+
+        public string GetUserStatsNoText
+        {
+            get
+            {
+                string retVal = "";
+
+                foreach (User user in Users)
+                {
+                    retVal += user.GetUserStatsNoText();
+                }
+
+                return retVal;
+            }
+        }
+
+        public string PrintDateStats
+        {
+            get 
+            {
+                StringBuilder sb = new StringBuilder(); 
+
+                foreach (KeyValuePair<StatType, int[]> kvp in DateStats)
+                {
+                    sb.Append(kvp.Key.ToString() + "\r\n");
+
+                    foreach (int i in kvp.Value)
+                    {
+                        sb.Append(i + "\r\n"); 
+                    }
+
+                    sb.Append("\r\n");
+                }
+
+                return sb.ToString();
+            }
+        }
     }
 
     public class User
@@ -273,8 +306,15 @@ namespace EmailStatistics
         public List<Mail> Mails { get; set; }
         public string EmailAddress { get; set; }
 
+        private string _additionalWordCheck;
+        private int _additionalWordMailsCount;
+        private int _additionalWordTotalCount;
+
+        private int _underXWords = 3;
+
         private int _totalLength;
         private int _wordCount;
+        private int _underXWordsCount;
 
         private int _linkCount;
         private int _mailsWithLink;
@@ -301,11 +341,13 @@ namespace EmailStatistics
             Mails = new List<Mail>();
         }
 
-        public User(Mail mail)
+        public User(Mail mail, string additionalWordCheck = "")
         {
             Mails = new List<Mail>();
             Mails.Add(mail);
             EmailAddress = mail.From;
+
+            _additionalWordCheck = additionalWordCheck;
         }
 
         internal void AddMail(Mail mail)
@@ -317,12 +359,25 @@ namespace EmailStatistics
                 _totalLength += mail.Body.Trim().Length;
                 string[] words = mail.Body.Trim().Split(' ');
                 _wordCount += words.Length;
+
+                if (!string.IsNullOrEmpty(_additionalWordCheck))
+                {
+                    Regex r = new Regex(_additionalWordCheck, RegexOptions.IgnoreCase);
+                    MatchCollection matches = r.Matches(mail.Body);
+                    _additionalWordTotalCount += matches.Count;
+
+                    if (matches.Count > 0)
+                        _additionalWordMailsCount += 1;
+                }
+
+                MatchCollection mCol = _regex.Matches(mail.BodyHtml);
+                _linkCount += mCol.Count;
+                _mailsWithLink += mCol.Count > 0 ? 1 : 0;
+
+                // If mail has link, but still under x words, do not count it. Links are important.
+                if (mCol.Count == 0 && words.Length < _underXWords)
+                    _underXWordsCount++;
             }
-
-
-            MatchCollection mCol = _regex.Matches(mail.BodyHtml);
-            _linkCount += mCol.Count;
-            _mailsWithLink += mCol.Count > 0 ? 1 : 0;
         }
 
         public string GetUserStats()
@@ -331,10 +386,42 @@ namespace EmailStatistics
                             "Length: {2}\r\nAvg. length: {3}\r\n" +
                             "Word count: {4}\r\nAvg. Word count: {5}\r\n" +
                             "Total links: {6}\r\nMails with links: {7}\r\n" +
-                             "-------------------------------------------------\r\n";
+                            "Mails with under {8} words: {9}\r\n";
 
+            if (!string.IsNullOrEmpty(_additionalWordCheck))
+            {
+                retVal += "Additional word check: {10}\r\nMails with additional words: {11}\r\n";
+                retVal = string.Format(retVal, EmailAddress, Mails.Count, _totalLength, AvgLength, _wordCount,
+                    AvgWordCount, _linkCount, _mailsWithLink, _underXWords, _underXWordsCount, _additionalWordTotalCount, _additionalWordMailsCount);
+            }
+            else
+                retVal = string.Format(retVal, EmailAddress, Mails.Count, _totalLength, AvgLength, _wordCount, AvgWordCount, _linkCount, _mailsWithLink, _underXWords, _underXWordsCount);
 
-            return string.Format(retVal, EmailAddress, Mails.Count, _totalLength, AvgLength, _wordCount, AvgWordCount, _linkCount, _mailsWithLink);
+            retVal += "-------------------------------------------------\r\n";
+
+            return retVal;
+        }
+
+        public string GetUserStatsNoText()
+        {
+            string retVal = "{0}\r\n{1}\r\n" +
+                            "{2}\r\n{3}\r\n" +
+                            "{4}\r\n{5}\r\n" +
+                            "{6}\r\n{7}\r\n" +
+                            "{8}\r\n"; ;
+
+            if (!string.IsNullOrEmpty(_additionalWordCheck))
+            {
+                retVal += "{9}\r\n{10}\r\n";
+                retVal = string.Format(retVal, EmailAddress, Mails.Count, _totalLength, AvgLength, _wordCount,
+                    AvgWordCount, _linkCount, _mailsWithLink, _underXWordsCount, _additionalWordTotalCount, _additionalWordMailsCount);
+            }
+            else
+                retVal = string.Format(retVal, EmailAddress, Mails.Count, _totalLength, AvgLength, _wordCount, AvgWordCount, _linkCount, _mailsWithLink, _underXWordsCount);
+
+            retVal += "-------------------------------------------------\r\n";
+
+            return retVal;
         }
     }
 }

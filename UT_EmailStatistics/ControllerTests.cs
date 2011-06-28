@@ -5,6 +5,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using EmailStatistics;
 using Rhino.Mocks;
+using System.Reflection;
+using System.Threading;
 
 namespace UT_EmailStatistics
 {
@@ -76,6 +78,54 @@ namespace UT_EmailStatistics
 
             _controller = new Controller(mockModel, mockView, mockFactory);
             _controller.EnableConnection();           
+        }
+
+        string _host = "imap.gmail.com";
+        int _port = 993;
+        string _username = "";
+        string _password = "";
+        bool _useSSL = true;
+
+        string _subject = "";
+        bool _getInbox = true;
+        bool _getSent = true;
+
+        [TestMethod]
+        [Description("This can be used to test functionality without UI")]
+        public void Controller_FullTest()
+        {
+            var mockView = MockRepository.GenerateMock<IView>();
+
+            EmailObjectFactory factory = new EmailObjectFactory();
+            Model m = new Model(int.MaxValue, "");
+            Controller c = new Controller(m, mockView, factory);
+            c.SetConfig(ConnectionType.IMAP, _host, _port, _useSSL, _username, _password);
+            IEmailWorker worker = getPriveteField<IEmailWorker>(c, "_emailWorker");
+      
+            c.EnableConnection();
+
+            while (worker.IsBusy())
+                Thread.Sleep(1000);
+
+            c.GetData(_subject, _getInbox, _getSent);
+
+            while (worker.IsBusy())
+                Thread.Sleep(1000);
+
+            string test = m.GetUserStats;
+            string test2 = m.GetUserStatsNoText;
+            string test3 = m.PrintDateStats;
+        }
+
+        private T getPriveteField<T>(object sender, string fieldName)
+        {
+            Type t = sender.GetType();
+
+            FieldInfo field = t.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+
+            object retVal = field.GetValue(sender);
+
+            return (T)retVal;
         }
     }
 }

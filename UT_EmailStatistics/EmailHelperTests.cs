@@ -18,7 +18,7 @@ namespace UT_EmailStatistics
 
         string _username = "";
         string _password = "";
-        string _subject = "gmail";
+        string _subject = "";
 
         public EmailHelperTests()
         {
